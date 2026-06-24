@@ -2205,6 +2205,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/smsgateway.SimSelectionMode"
                         }
                     ]
+                },
+                "work_hours_enabled": {
+                    "description": "WorkHoursEnabled enables restricting message delivery to a configurable time window.",
+                    "type": "boolean"
+                },
+                "work_hours_end": {
+                    "description": "WorkHoursEnd is the end of the working hours window in HH:mm format (24-hour).",
+                    "type": "string"
+                },
+                "work_hours_start": {
+                    "description": "WorkHoursStart is the start of the working hours window in HH:mm format (24-hour).",
+                    "type": "string"
                 }
             }
         },
@@ -2380,9 +2392,11 @@ const docTemplate = `{
                 "sms:failed",
                 "system:ping",
                 "mms:received",
-                "mms:downloaded"
+                "mms:downloaded",
+                "app:started"
             ],
             "x-enum-comments": {
+                "WebhookEventAppStarted": "Triggered when the application is started.",
                 "WebhookEventMmsDownloaded": "Triggered when an MMS is downloaded.",
                 "WebhookEventMmsReceived": "Triggered when an MMS is received.",
                 "WebhookEventSmsDataReceived": "Triggered when a data SMS is received.",
@@ -2400,7 +2414,8 @@ const docTemplate = `{
                 "Triggered when an SMS processing fails.",
                 "Triggered when the device pings the server.",
                 "Triggered when an MMS is received.",
-                "Triggered when an MMS is downloaded."
+                "Triggered when an MMS is downloaded.",
+                "Triggered when the application is started."
             ],
             "x-enum-varnames": [
                 "WebhookEventSmsReceived",
@@ -2410,7 +2425,8 @@ const docTemplate = `{
                 "WebhookEventSmsFailed",
                 "WebhookEventSystemPing",
                 "WebhookEventMmsReceived",
-                "WebhookEventMmsDownloaded"
+                "WebhookEventMmsDownloaded",
+                "WebhookEventAppStarted"
             ]
         }
     },
