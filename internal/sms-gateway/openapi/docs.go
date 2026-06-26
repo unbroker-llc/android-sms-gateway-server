@@ -1411,6 +1411,14 @@ const docTemplate = `{
                         }
                     ]
                 },
+                "receiver": {
+                    "description": "Receiver contains settings related to SMS message reception.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/smsgateway.SettingsReceiver"
+                        }
+                    ]
+                },
                 "webhooks": {
                     "description": "Webhooks contains settings related to webhook functionality.",
                     "allOf": [
@@ -2218,6 +2226,15 @@ const docTemplate = `{
                 }
             }
         },
+        "smsgateway.SettingsReceiver": {
+            "type": "object",
+            "properties": {
+                "content_provider_enabled": {
+                    "description": "ContentProviderEnabled enables monitoring the SMS content provider as a fallback for\ncarriers that intercept the SMS_RECEIVED broadcast.",
+                    "type": "boolean"
+                }
+            }
+        },
         "smsgateway.SettingsWebhooks": {
             "type": "object",
             "properties": {
@@ -2380,9 +2397,11 @@ const docTemplate = `{
                 "sms:failed",
                 "system:ping",
                 "mms:received",
-                "mms:downloaded"
+                "mms:downloaded",
+                "app:started"
             ],
             "x-enum-comments": {
+                "WebhookEventAppStarted": "Triggered when the application is started.",
                 "WebhookEventMmsDownloaded": "Triggered when an MMS is downloaded.",
                 "WebhookEventMmsReceived": "Triggered when an MMS is received.",
                 "WebhookEventSmsDataReceived": "Triggered when a data SMS is received.",
@@ -2400,7 +2419,8 @@ const docTemplate = `{
                 "Triggered when an SMS processing fails.",
                 "Triggered when the device pings the server.",
                 "Triggered when an MMS is received.",
-                "Triggered when an MMS is downloaded."
+                "Triggered when an MMS is downloaded.",
+                "Triggered when the application is started."
             ],
             "x-enum-varnames": [
                 "WebhookEventSmsReceived",
@@ -2410,7 +2430,8 @@ const docTemplate = `{
                 "WebhookEventSmsFailed",
                 "WebhookEventSystemPing",
                 "WebhookEventMmsReceived",
-                "WebhookEventMmsDownloaded"
+                "WebhookEventMmsDownloaded",
+                "WebhookEventAppStarted"
             ]
         }
     },
