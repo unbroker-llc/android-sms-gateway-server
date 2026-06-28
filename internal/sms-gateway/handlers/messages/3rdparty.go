@@ -85,7 +85,7 @@ func (h *ThirdPartyController) post(userID string, c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
-	var req smsgateway.Message
+	var req thirdPartySendRequest
 	if err := h.BodyParserValidator(c, &req); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
@@ -109,16 +109,21 @@ func (h *ThirdPartyController) post(userID string, c *fiber.Ctx) error {
 
 	var textContent *messages.TextMessageContent
 	var dataContent *messages.DataMessageContent
-	if text := req.GetTextMessage(); text != nil {
+	var mmsContent *messages.MmsMessageContent
+	switch {
+	case req.GetTextMessage() != nil:
 		textContent = &messages.TextMessageContent{
-			Text: text.Text,
+			Text: req.GetTextMessage().Text,
 		}
-	} else if data := req.GetDataMessage(); data != nil {
+	case req.GetDataMessage() != nil:
+		data := req.GetDataMessage()
 		dataContent = &messages.DataMessageContent{
 			Data: data.Data,
 			Port: data.Port,
 		}
-	} else {
+	case req.MmsMessage != nil:
+		mmsContent = req.MmsMessage
+	default:
 		return fiber.NewError(fiber.StatusBadRequest, "No message content provided")
 	}
 
@@ -126,6 +131,7 @@ func (h *ThirdPartyController) post(userID string, c *fiber.Ctx) error {
 		MessageContent: messages.MessageContent{
 			TextContent: textContent,
 			DataContent: dataContent,
+			MmsContent:  mmsContent,
 		},
 
 		ID: req.ID,

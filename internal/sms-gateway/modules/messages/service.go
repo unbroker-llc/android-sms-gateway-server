@@ -309,6 +309,10 @@ func (s *Service) prepareMessage(
 		if setErr := msg.SetDataContent(*message.DataContent); setErr != nil {
 			return nil, fmt.Errorf("failed to set data content: %w", setErr)
 		}
+	case message.MmsContent != nil:
+		if setErr := msg.SetMmsContent(*message.MmsContent); setErr != nil {
+			return nil, fmt.Errorf("failed to set mms content: %w", setErr)
+		}
 	default:
 		return nil, ErrNoContent
 	}

@@ -67,12 +67,13 @@ func (h *MobileController) list(device devices.Device, c *fiber.Ctx) error {
 		return fmt.Errorf("failed to get messages: %w", err)
 	}
 
+	// Returns a JSON array of messages, identical in shape to
+	// smsgateway.MobileGetMessagesResponse but with the extra top-level
+	// `mmsMessage` field for outbound MMS (see converters.MobileMessageDTO).
 	return c.JSON(
-		smsgateway.MobileGetMessagesResponse(
-			slices.Map(
-				msgs,
-				converters.MessageToMobileDTO,
-			),
+		slices.Map(
+			msgs,
+			converters.MessageToMobileDTO,
 		),
 	)
 }
