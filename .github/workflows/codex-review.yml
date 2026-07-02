@@ -1,0 +1,20 @@
+name: Codex review
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+jobs:
+  review:
+    uses: unbroker-llc/gh-actions-helpers/.github/workflows/codex-review.yml@main
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    # Re-reviews resume the same conversation across pushes by default (cheaper
+    # via session persistence + prompt cache; see gh-actions-helpers
+    # codex/README.md). To opt this repo back to the codex-action path:
+    # with:
+    #   resume: false
+    secrets:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
