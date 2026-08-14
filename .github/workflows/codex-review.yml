@@ -1,0 +1,42 @@
+# Copy this to a participating repo at: .github/workflows/codex-review.yml
+# It triggers Codex review on PRs (and the /codex-dismiss comment command on
+# PR comments) and delegates all logic to the reusable workflow in
+# unbroker-llc/gh-actions-helpers. Requires the org secret OPENAI_API_KEY to
+# be visible to this repo.
+#
+# The job id below is "review" ON PURPOSE: the required status check the org
+# rulesets pin is named after it ("review / post_feedback"). Renaming the job
+# breaks the required check in this repo.
+
+name: Codex review
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+  issue_comment:
+    types: [created]
+
+jobs:
+  review:
+    # pull_request events always route through (the reusable workflow decides
+    # what to do with drafts/bots); issue_comment events route through ONLY
+    # for /codex-dismiss comments on PRs, so ordinary comment traffic never
+    # spins up a runner.
+    if: >-
+      ${{ github.event_name == 'pull_request'
+          || (github.event.issue.pull_request
+              && startsWith(github.event.comment.body, '/codex-dismiss')) }}
+    uses: unbroker-llc/gh-actions-helpers/.github/workflows/codex-review.yml@main
+    permissions:
+      contents: read
+      pull-requests: write
+      # The dismiss lane posts audit replies as PR comments (issues API), and
+      # the review lane reads /codex-dismiss comments to compute dismissals.
+      issues: write
+    # Re-reviews resume the same conversation across pushes by default (cheaper
+    # via session persistence + prompt cache; see codex/README.md). To opt this
+    # repo back to from-scratch reviews on every push:
+    # with:
+    #   resume: false
+    secrets:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
