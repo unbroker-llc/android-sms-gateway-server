@@ -1,0 +1,44 @@
+# Copy this to a participating repo at: .github/workflows/required-ci.yml
+#
+# It emits the status check `ci`, which the org ruleset "Require repo CI (org)"
+# requires on the default branch and on `dev`. The job reads every GitHub Actions
+# check run and workflow run on the pull request's head commit and fails if any of
+# them is red, so one shared context name works across repos whose CI jobs are all
+# named differently.
+#
+# Keep this file byte-identical across repos. In particular:
+#   - the job id is `ci` ON PURPOSE - the required status check is named after it,
+#     so renaming the job breaks the required check in this repo;
+#   - there are no `paths:` or `branches:` filters on the trigger. A workflow
+#     skipped by path filtering mints NO check run at all, and a required context
+#     with no check run sits at "Expected" forever - every unrelated PR in the repo
+#     becomes unmergeable. (A job that runs and concludes `skipped` is fine and DOES
+#     satisfy a required check - verified 2026-08-19 on six Dependabot PRs that
+#     merged with `review / codex` skipped. It is the absent check that blocks, not
+#     the skipped one.) Since the trigger is unfiltered, this job always runs.
+
+name: Required CI
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+concurrency:
+  group: required-ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    # Backstop only - the gate enforces its own (shorter) deadline internally, so
+    # tuning the wait does not need a PR in every repo.
+    timeout-minutes: 55
+    permissions:
+      contents: read
+      # checks: the sibling jobs' results. actions: their workflow runs, which is
+      # the only reliable "still going" signal - a job behind `needs:` has no check
+      # run until its upstream finishes.
+      checks: read
+      actions: read
+    steps:
+      - uses: unbroker-llc/gh-actions-helpers/required-ci@main
