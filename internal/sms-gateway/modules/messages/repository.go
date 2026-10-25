@@ -174,9 +174,15 @@ func (r *Repository) UpdateState(message *messageModel) error {
 	return nil
 }
 
+// HashProcessed hashes the content and recipients of processed messages.
+//
+// JSON_UNQUOTE(JSON_EXTRACT(..)) is used instead of JSON_VALUE: on MySQL, JSON_VALUE
+// defaults to RETURNING CHAR(512) and yields NULL for longer strings, which made the
+// UPDATE fail with "Column 'content' cannot be null" for any text over 512 chars. The
+// final `content` fallback covers payloads with neither text nor data (e.g. MMS).
 func (r *Repository) HashProcessed(ctx context.Context, ids []uint64) (int64, error) {
 	rawSQL := "UPDATE `messages` `m`, `message_recipients` `r`\n" +
-		"SET `m`.`is_hashed` = true, `m`.`content` = SHA2(COALESCE(JSON_VALUE(`content`, '$.text'), JSON_VALUE(`content`, '$.data')), 256), `r`.`phone_number` = LEFT(SHA2(phone_number, 256), 16)\n" +
+		"SET `m`.`is_hashed` = true, `m`.`content` = SHA2(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(`content`, '$.text')), JSON_UNQUOTE(JSON_EXTRACT(`content`, '$.data')), `content`), 256), `r`.`phone_number` = LEFT(SHA2(phone_number, 256), 16)\n" +
 		"WHERE `m`.`id` = `r`.`message_id` AND `m`.`is_hashed` = false AND `m`.`is_encrypted` = false AND `m`.`state` <> 'Pending'"
 	params := []any{}
 	if len(ids) > 0 {
